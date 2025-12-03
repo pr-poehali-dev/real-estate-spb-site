@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Separator } from '@/components/ui/separator';
@@ -191,34 +190,32 @@ const Index = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="lg:col-span-1">
                 <label className="text-sm font-medium mb-2 block">Тип жилья</label>
-                <Select value={propertyType} onValueChange={setPropertyType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите тип" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все типы</SelectItem>
-                    <SelectItem value="Квартира">Квартира</SelectItem>
-                    <SelectItem value="Пентхаус">Пентхаус</SelectItem>
-                    <SelectItem value="Таунхаус">Таунхаус</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  value={propertyType}
+                  onChange={(e) => setPropertyType(e.target.value)}
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                >
+                  <option value="all">Все типы</option>
+                  <option value="Квартира">Квартира</option>
+                  <option value="Пентхаус">Пентхаус</option>
+                  <option value="Таунхаус">Таунхаус</option>
+                </select>
               </div>
 
-              <div>
+              <div className="lg:col-span-1">
                 <label className="text-sm font-medium mb-2 block">Локация</label>
-                <Select value={location} onValueChange={setLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите район" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все районы</SelectItem>
-                    <SelectItem value="Центральный район">Центральный район</SelectItem>
-                    <SelectItem value="Петроградский район">Петроградский район</SelectItem>
-                    <SelectItem value="Адмиралтейский район">Адмиралтейский район</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                >
+                  <option value="all">Все районы</option>
+                  <option value="Центральный район">Центральный район</option>
+                  <option value="Петроградский район">Петроградский район</option>
+                  <option value="Адмиралтейский район">Адмиралтейский район</option>
+                </select>
               </div>
             </div>
 
