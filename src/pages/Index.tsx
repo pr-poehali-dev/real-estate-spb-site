@@ -1,20 +1,12 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Separator } from '@/components/ui/separator';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+const PropertyMap = lazy(() => import('@/components/PropertyMap'));
 
 interface Property {
   id: number;
@@ -297,28 +289,9 @@ const Index = () => {
               Карта объектов
             </h3>
             <div className="h-[500px] rounded-lg overflow-hidden">
-              <MapContainer
-                center={[59.9311, 30.3609]}
-                zoom={12}
-                style={{ height: '100%', width: '100%' }}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {filteredProperties.map((property) => (
-                  <Marker key={property.id} position={property.coordinates}>
-                    <Popup>
-                      <div className="text-sm">
-                        <h4 className="font-semibold mb-1">{property.title}</h4>
-                        <p className="text-xs text-muted-foreground mb-1">{property.location}</p>
-                        <p className="font-bold text-accent">{(property.price / 1000000).toFixed(1)} млн ₽</p>
-                        <p className="text-xs">{property.area} м² • {property.rooms} комнаты</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Загрузка карты...</div>}>
+                <PropertyMap properties={filteredProperties} />
+              </Suspense>
             </div>
           </CardContent>
         </Card>
