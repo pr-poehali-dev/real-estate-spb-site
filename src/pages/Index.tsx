@@ -5,6 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Separator } from '@/components/ui/separator';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 interface Property {
   id: number;
@@ -15,6 +25,8 @@ interface Property {
   location: string;
   type: string;
   image: string;
+  marketType: 'новостройка' | 'вторичка';
+  coordinates: [number, number];
 }
 
 const properties: Property[] = [
@@ -26,7 +38,9 @@ const properties: Property[] = [
     rooms: 3,
     location: 'Центральный район',
     type: 'Квартира',
-    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/f7538c25-1f30-4c20-b275-123a65ea0c07.jpg'
+    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/f7538c25-1f30-4c20-b275-123a65ea0c07.jpg',
+    marketType: 'новостройка',
+    coordinates: [59.9311, 30.3609]
   },
   {
     id: 2,
@@ -36,7 +50,9 @@ const properties: Property[] = [
     rooms: 4,
     location: 'Центральный район',
     type: 'Квартира',
-    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/0417bfe6-5869-42eb-9bd6-8d52f76c0208.jpg'
+    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/0417bfe6-5869-42eb-9bd6-8d52f76c0208.jpg',
+    marketType: 'вторичка',
+    coordinates: [59.9343, 30.3351]
   },
   {
     id: 3,
@@ -46,7 +62,9 @@ const properties: Property[] = [
     rooms: 5,
     location: 'Петроградский район',
     type: 'Пентхаус',
-    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/f7538c25-1f30-4c20-b275-123a65ea0c07.jpg'
+    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/f7538c25-1f30-4c20-b275-123a65ea0c07.jpg',
+    marketType: 'новостройка',
+    coordinates: [59.9667, 30.3111]
   },
   {
     id: 4,
@@ -56,7 +74,9 @@ const properties: Property[] = [
     rooms: 3,
     location: 'Адмиралтейский район',
     type: 'Квартира',
-    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/0417bfe6-5869-42eb-9bd6-8d52f76c0208.jpg'
+    image: 'https://cdn.poehali.dev/projects/71e820ac-bc0b-4b60-a915-d368f6ceb751/files/0417bfe6-5869-42eb-9bd6-8d52f76c0208.jpg',
+    marketType: 'вторичка',
+    coordinates: [59.9265, 30.2987]
   }
 ];
 
@@ -67,6 +87,7 @@ const Index = () => {
   const [areaTo, setAreaTo] = useState('');
   const [propertyType, setPropertyType] = useState('all');
   const [location, setLocation] = useState('all');
+  const [marketType, setMarketType] = useState<'all' | 'новостройка' | 'вторичка'>('all');
   const [filteredProperties, setFilteredProperties] = useState(properties);
 
   const applyFilters = () => {
@@ -90,6 +111,9 @@ const Index = () => {
     if (location !== 'all') {
       filtered = filtered.filter(p => p.location === location);
     }
+    if (marketType !== 'all') {
+      filtered = filtered.filter(p => p.marketType === marketType);
+    }
 
     setFilteredProperties(filtered);
   };
@@ -101,6 +125,7 @@ const Index = () => {
     setAreaTo('');
     setPropertyType('all');
     setLocation('all');
+    setMarketType('all');
     setFilteredProperties(properties);
   };
 
@@ -141,7 +166,40 @@ const Index = () => {
       </section>
 
       <section id="catalog" className="py-16 container mx-auto px-4">
-        <h2 className="text-4xl font-serif font-bold text-center mb-12 text-foreground">Каталог объектов</h2>
+        <h2 className="text-4xl font-serif font-bold text-center mb-8 text-foreground">Каталог объектов</h2>
+        
+        <div className="flex justify-center gap-4 mb-8">
+          <Button
+            variant={marketType === 'all' ? 'default' : 'outline'}
+            onClick={() => {
+              setMarketType('all');
+              setFilteredProperties(properties);
+            }}
+            className="text-lg px-6"
+          >
+            Все объекты
+          </Button>
+          <Button
+            variant={marketType === 'новостройка' ? 'default' : 'outline'}
+            onClick={() => {
+              setMarketType('новостройка');
+              setFilteredProperties(properties.filter(p => p.marketType === 'новостройка'));
+            }}
+            className="text-lg px-6"
+          >
+            Новостройки
+          </Button>
+          <Button
+            variant={marketType === 'вторичка' ? 'default' : 'outline'}
+            onClick={() => {
+              setMarketType('вторичка');
+              setFilteredProperties(properties.filter(p => p.marketType === 'вторичка'));
+            }}
+            className="text-lg px-6"
+          >
+            Вторичный рынок
+          </Button>
+        </div>
         
         <Card className="mb-8 shadow-lg">
           <CardContent className="p-6">
@@ -232,6 +290,39 @@ const Index = () => {
           </CardContent>
         </Card>
 
+        <Card className="mb-8 shadow-lg">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-serif font-semibold mb-4 flex items-center">
+              <Icon name="Map" size={24} className="mr-2 text-accent" />
+              Карта объектов
+            </h3>
+            <div className="h-[500px] rounded-lg overflow-hidden">
+              <MapContainer
+                center={[59.9311, 30.3609]}
+                zoom={12}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {filteredProperties.map((property) => (
+                  <Marker key={property.id} position={property.coordinates}>
+                    <Popup>
+                      <div className="text-sm">
+                        <h4 className="font-semibold mb-1">{property.title}</h4>
+                        <p className="text-xs text-muted-foreground mb-1">{property.location}</p>
+                        <p className="font-bold text-accent">{(property.price / 1000000).toFixed(1)} млн ₽</p>
+                        <p className="text-xs">{property.area} м² • {property.rooms} комнаты</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => (
             <Card key={property.id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300 animate-scale-in">
@@ -243,6 +334,9 @@ const Index = () => {
                 />
                 <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground">
                   {property.type}
+                </Badge>
+                <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
+                  {property.marketType === 'новостройка' ? '🏗️ Новостройка' : '🏛️ Вторичка'}
                 </Badge>
               </div>
               <CardContent className="p-6">
